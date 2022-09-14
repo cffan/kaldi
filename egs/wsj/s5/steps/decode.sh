@@ -22,6 +22,7 @@ scoring_opts=
 # e.g. --scoring-opts "--min-lmwt 1 --max-lmwt 20"
 skip_scoring=false
 decode_extra_opts=
+pca_transform_dir=
 # End configuration section.
 
 echo "$0 $@"  # Print the command line for logging
@@ -79,7 +80,7 @@ if [ $(basename $model) != final.alimdl ] ; then
   fi
 fi
 
-for f in $sdata/1/feats.scp $sdata/1/cmvn.scp $model $graphdir/HCLG.fst; do
+for f in $sdata/1/feats.scp $model $graphdir/HCLG.fst; do
   [ ! -f $f ] && echo "$0: Error: no such file $f" && exit 1;
 done
 
@@ -93,8 +94,10 @@ delta_opts=`cat $srcdir/delta_opts 2>/dev/null`
 thread_string=
 [ $num_threads -gt 1 ] && thread_string="-parallel --num-threads=$num_threads"
 
+[ ! -f $pca_transform_dir/final.mat ] && echo "No such file $pca_transform_dir/final.mat" && exit 1;
+
 case $feat_type in
-  delta) feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | add-deltas $delta_opts ark:- ark:- |";;
+  delta) feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | transform-feats $pca_transform_dir/final.mat ark:- ark:- |";;
   lda) feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | splice-feats $splice_opts ark:- ark:- | transform-feats $srcdir/final.mat ark:- ark:- |";;
   *) echo "$0: Error: Invalid feature type $feat_type" && exit 1;
 esac

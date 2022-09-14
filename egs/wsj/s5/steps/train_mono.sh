@@ -27,6 +27,7 @@ power=0.25 # exponent to determine number of gaussians from occurrence counts
 norm_vars=false # deprecated, prefer --cmvn-opts "--norm-vars=false"
 cmvn_opts=  # can be used to add extra options to cmvn.
 delta_opts= # can be used to add extra options to add-deltas
+transform_dir= # PCA transform dir
 # End configuration section.
 
 echo "$0 $@"  # Print the command line for logging
@@ -61,7 +62,11 @@ $norm_vars && cmvn_opts="--norm-vars=true $cmvn_opts"
 echo $cmvn_opts  > $dir/cmvn_opts # keep track of options to CMVN.
 [ ! -z $delta_opts ] && echo $delta_opts > $dir/delta_opts # keep track of options to delta
 
-feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | add-deltas $delta_opts ark:- ark:- |"
+[ ! -f $transform_dir/final.mat ] && echo "No such file $transform_dir/final.mat" && exit 1;
+
+#feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | add-deltas $delta_opts ark:- ark:- |"
+feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | transform-feats $transform_dir/final.mat ark:- ark:- |"
+#feats="ark,s,cs:add-deltas $delta_opts scp:$sdata/JOB/feats.scp  ark:- |"
 example_feats="`echo $feats | sed s/JOB/1/g`";
 
 echo "$0: Initializing monophone system."

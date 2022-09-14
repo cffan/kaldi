@@ -22,6 +22,7 @@ norm_vars=false # deprecated.  Prefer --cmvn-opts "--norm-vars=true"
 cmvn_opts=
 delta_opts=
 context_opts=   # use"--context-width=5 --central-position=2" for quinphone
+transform_dir=
 # End configuration.
 
 echo "$0 $@"  # Print the command line for logging
@@ -71,7 +72,7 @@ $norm_vars && cmvn_opts="--norm-vars=true $cmvn_opts"
 echo $cmvn_opts  > $dir/cmvn_opts # keep track of options to CMVN.
 [ ! -z $delta_opts ] && echo $delta_opts > $dir/delta_opts
 
-feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | add-deltas $delta_opts ark:- ark:- |"
+feats="ark,s,cs:apply-cmvn $cmvn_opts --utt2spk=ark:$sdata/JOB/utt2spk scp:$sdata/JOB/cmvn.scp scp:$sdata/JOB/feats.scp ark:- | transform-feats $transform_dir/final.mat ark:- ark:- |"
 
 rm $dir/.error 2>/dev/null
 

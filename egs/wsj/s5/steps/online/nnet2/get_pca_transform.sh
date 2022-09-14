@@ -54,7 +54,8 @@ if ! matrix-sum --binary=false scp:$data/cmvn.scp - >$dir/global_cmvn.stats 2>/d
   exit 1
 fi
 
-feats="ark,s,cs:utils/subset_scp.pl --quiet $max_utts $data/feats.scp | apply-cmvn-online $online_cmvn_opts $dir/global_cmvn.stats scp:- ark:- | splice-feats $splice_opts ark:- ark:- | subsample-feats --n=$subsample ark:- ark:- |"
+#feats="ark,s,cs:utils/subset_scp.pl --quiet $max_utts $data/feats.scp | apply-cmvn-online $online_cmvn_opts $dir/global_cmvn.stats scp:- ark:- | splice-feats $splice_opts ark:- ark:- | subsample-feats --n=$subsample ark:- ark:- |"
+feats="ark,s,cs:utils/subset_scp.pl --quiet $max_utts $data/feats.scp | apply-cmvn --utt2spk=ark:$data/utt2spk scp:$data/cmvn.scp scp:- ark:- | subsample-feats --n=$subsample ark:- ark:- |"
 
 if [ $stage -le 0 ]; then
   $cmd $dir/log/pca_est.log \
